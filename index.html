@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤖 آلفا بات | Alpha Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700;900&family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Vazirmatn', sans-serif; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: #0a0a1a;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== Stars (سبک - فقط ۲۰ تا) ===== */
+  .stars-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 5s infinite; }
+  @keyframes twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.6; } }
+
+  /* ===== Navbar ===== */
+  nav {
+    position: sticky; top: 0; z-index: 200;
+    background: rgba(10, 10, 26, 0.95);
+    border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+    padding: 12px 25px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  nav .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; cursor: pointer; }
+  nav .logo-icon {
+    width: 45px; height: 45px; border-radius: 12px;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    border: 2px solid rgba(168, 85, 247, 0.5);
+  }
+  nav .logo-text {
+    font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 900;
+    background: linear-gradient(90deg, #a855f7, #ec4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .menu-btn {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 5px; cursor: pointer; transition: 0.2s; z-index: 201; position: relative;
+  }
+  .menu-btn:hover { background: rgba(168, 85, 247, 0.3); }
+  .menu-btn span { display: block; width: 22px; height: 3px; background: #fff; border-radius: 5px; transition: 0.2s; }
+  .menu-btn.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+  .menu-btn.active span:nth-child(2) { opacity: 0; }
+  .menu-btn.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+  /* ===== Dropdown ===== */
+  .dropdown {
+    position: fixed; top: 75px; left: 20px; width: 280px;
+    background: #0f0f23;
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    border-radius: 18px; padding: 15px; z-index: 199;
+    opacity: 0; visibility: hidden; transform: translateY(-10px);
+    transition: all 0.2s ease;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+    max-height: 80vh; overflow-y: auto;
+  }
+  .dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+  .dropdown::-webkit-scrollbar { width: 6px; }
+  .dropdown::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.5); border-radius: 5px; }
+  .dropdown .dd-header {
+    display: flex; align-items: center; gap: 12px;
+    padding-bottom: 15px; margin-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .dropdown .dd-header .dd-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+  }
+  .dropdown .dd-header .dd-title {
+    font-weight: 900; font-size: 1.1rem;
+    background: linear-gradient(90deg, #a855f7, #ec4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-family: 'Orbitron', sans-serif;
+  }
+  .dropdown .dd-header .dd-sub { font-size: 0.75rem; color: #888; }
+  .dropdown a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 15px; color: #ccc; text-decoration: none;
+    border-radius: 12px; font-size: 0.95rem; transition: 0.2s;
+    margin-bottom: 4px; cursor: pointer;
+  }
+  .dropdown a:hover { background: rgba(168, 85, 247, 0.2); color: #fff; }
+  .dropdown a .icon { font-size: 1.2rem; width: 25px; text-align: center; }
+
+  /* ===== Overlay ===== */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5);
+    z-index: 198; opacity: 0; visibility: hidden; transition: 0.2s;
+  }
+  .overlay.open { opacity: 1; visibility: visible; }
+
+  /* ===== Hero ===== */
+  .hero {
+    text-align: center; padding: 60px 20px 40px;
+    position: relative; z-index: 1;
+  }
+  .hero .badge {
+    display: inline-block;
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    color: #d8b4fe; padding: 6px 16px;
+    border-radius: 50px; font-size: 0.85rem; margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Orbitron', sans-serif; font-size: 3.5rem; font-weight: 900;
+    background: linear-gradient(90deg, #a855f7, #ec4899, #f59e0b);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 15px;
+  }
+  .hero p {
+    color: #b8b8d0; font-size: 1.15rem; max-width: 600px;
+    margin: 0 auto 30px; line-height: 1.8;
+  }
+  .hero .cta { display: inline-flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+  .hero .cta a {
+    padding: 14px 32px; border-radius: 50px;
+    text-decoration: none; font-weight: 700; font-size: 1rem;
+    transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer;
+  }
+  .hero .cta .primary {
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    color: white;
+  }
+  .hero .cta .primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(168, 85, 247, 0.5); }
+  .hero .cta .secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2); color: white;
+  }
+  .hero .cta .secondary:hover { background: rgba(255, 255, 255, 0.1); }
+
+  /* ===== Stats Bar ===== */
+  .stats-bar {
+    display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;
+    padding: 25px 20px; max-width: 900px; margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+  .stat-item {
+    text-align: center; padding: 15px 25px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px; min-width: 130px;
+  }
+  .stat-item .num {
+    font-size: 1.8rem; font-weight: 900;
+    background: linear-gradient(90deg, #a855f7, #ec4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-family: 'Orbitron', sans-serif;
+  }
+  .stat-item .lbl { color: #aaa; font-size: 0.85rem; margin-top: 5px; }
+
+  /* ===== Section Title ===== */
+  .section-title {
+    text-align: center; margin: 60px 0 40px;
+    position: relative; z-index: 1;
+  }
+  .section-title h2 { font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 10px; }
+  .section-title span {
+    display: inline-block; width: 60px; height: 4px;
+    background: linear-gradient(90deg, #a855f7, #ec4899); border-radius: 10px;
+  }
+  .section-title p { color: #999; margin-top: 10px; font-size: 0.95rem; }
+
+  /* ===== Features Grid ===== */
+  .features {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px; max-width: 1200px; margin: 0 auto 40px;
+    padding: 0 20px; position: relative; z-index: 1;
+  }
+  .feature-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px; padding: 25px;
+    transition: 0.2s; cursor: pointer;
+    position: relative; overflow: hidden;
+  }
+  .feature-card::before {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 4px; height: 100%;
+    background: linear-gradient(180deg, #a855f7, #ec4899);
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(168, 85, 247, 0.5);
+  }
+  .feature-card .fc-icon { font-size: 2.5rem; margin-bottom: 15px; }
+  .feature-card h3 { font-size: 1.15rem; margin-bottom: 10px; font-weight: 700; }
+  .feature-card p { color: #aaa; font-size: 0.9rem; line-height: 1.7; }
+
+  /* ===== AI Page (سبک) ===== */
+  .ai-page {
+    max-width: 800px; margin: 40px auto;
+    padding: 0 20px;
+    position: relative; z-index: 1;
+    display: none;
+  }
+  .ai-page.active { display: block; }
+  .ai-header {
+    display: flex; align-items: center; gap: 15px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: 20px; padding: 20px;
+    margin-bottom: 20px;
+  }
+  .ai-header .ai-icon {
+    width: 60px; height: 60px; border-radius: 15px;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+  }
+  .ai-header h2 { font-size: 1.3rem; margin-bottom: 5px; }
+  .ai-header p { font-size: 0.85rem; color: #888; }
+  .ai-header .back-btn {
+    margin-right: auto;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff; padding: 8px 16px;
+    border-radius: 12px; cursor: pointer;
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 0.85rem;
+    transition: 0.2s;
+  }
+  .ai-header .back-btn:hover { background: rgba(236, 72, 153, 0.3); }
+
+  /* ===== Chat Area ===== */
+  .chat-area {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px; padding: 15px;
+    height: 400px; overflow-y: auto;
+    margin-bottom: 15px;
+  }
+  .chat-area::-webkit-scrollbar { width: 6px; }
+  .chat-area::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.5); border-radius: 5px; }
+  .chat-msg {
+    padding: 12px 16px; border-radius: 16px;
+    margin-bottom: 12px; max-width: 85%;
+    line-height: 1.8; font-size: 0.9rem;
+    word-wrap: break-word;
+  }
+  .chat-msg.user {
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    color: white;
+    margin-right: 0; margin-left: auto;
+    border-bottom-left-radius: 4px;
+  }
+  .chat-msg.bot {
+    background: rgba(255, 255, 255, 0.07);
+    color: #f1f1f1;
+    margin-left: 0; margin-right: auto;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom-right-radius: 4px;
+  }
+  .chat-msg.bot .bot-name {
+    font-size: 0.72rem; color: #a855f7; margin-bottom: 6px;
+    font-weight: 700; display: flex; align-items: center; gap: 5px;
+  }
+  .chat-msg.bot .bot-name::before { content: '🤖'; font-size: 0.9rem; }
+
+  /* ===== Typing ===== */
+  .typing-indicator {
+    display: none; padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 16px; margin-bottom: 12px;
+    width: 70px; border-bottom-right-radius: 4px;
+  }
+  .typing-indicator.show { display: flex; gap: 5px; align-items: center; justify-content: center; }
+  .typing-indicator span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #a855f7; animation: typing 1.4s infinite;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* ===== Chat Input ===== */
+  .chat-input-row { display: flex; gap: 10px; }
+  .chat-input-row input {
+    flex: 1; padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 15px; color: #fff;
+    font-family: 'Vazirmatn', sans-serif; font-size: 0.95rem;
+    outline: none; transition: 0.2s;
+  }
+  .chat-input-row input:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+  }
+  .chat-input-row button {
+    padding: 14px 24px; border-radius: 15px;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    color: white; border: none; cursor: pointer;
+    font-family: 'Vazirmatn', sans-serif;
+    font-weight: 700; font-size: 0.95rem;
+    transition: 0.2s;
+  }
+  .chat-input-row button:hover { transform: scale(1.03); }
+  .chat-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ===== Modal ===== */
+  .modal {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 0; visibility: hidden; transition: 0.2s;
+  }
+  .modal.open { opacity: 1; visibility: visible; }
+  .modal-content {
+    background: #0f0f23;
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    border-radius: 25px; padding: 30px;
+    max-width: 600px; width: 100%;
+    max-height: 88vh; overflow-y: auto;
+    position: relative;
+    transform: scale(0.95); transition: 0.2s;
+  }
+  .modal.open .modal-content { transform: scale(1); }
+  .modal-content::-webkit-scrollbar { width: 6px; }
+  .modal-content::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.5); border-radius: 5px; }
+  .modal-close {
+    position: absolute; top: 15px; left: 15px;
+    width: 35px; height: 35px; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none; color: #fff; font-size: 1.2rem;
+    cursor: pointer; transition: 0.2s;
+  }
+  .modal-close:hover { background: rgba(236, 72, 153, 0.5); }
+  .modal-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .modal-header .mh-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+  }
+  .modal-header h3 { font-size: 1.2rem; font-weight: 900; }
+  .modal-header p { font-size: 0.85rem; color: #888; }
+
+  /* ===== Input Group ===== */
+  .input-group { margin-bottom: 15px; }
+  .input-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #ccc; }
+  .input-group input, .input-group textarea {
+    width: 100%; padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px; color: #fff;
+    font-family: 'Vazirmatn', sans-serif; font-size: 0.95rem;
+    transition: 0.2s; outline: none;
+  }
+  .input-group input:focus, .input-group textarea:focus {
+    border-color: #a855f7;
+  }
+  .input-group textarea { resize: vertical; min-height: 100px; }
+
+  /* ===== Buttons ===== */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 12px 25px; border-radius: 12px;
+    border: none; cursor: pointer; font-family: 'Vazirmatn', sans-serif;
+    font-weight: 700; font-size: 0.95rem; transition: 0.2s;
+    text-decoration: none;
+  }
+  .btn-primary { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; }
+  .btn-primary:hover { transform: scale(1.02); }
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff; border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); }
+  .btn-block { width: 100%; }
+
+  /* ===== Riddle ===== */
+  .riddle-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 15px; padding: 25px;
+    text-align: center; margin-bottom: 15px;
+  }
+  .riddle-box .question { font-size: 1.1rem; line-height: 1.9; margin-bottom: 20px; }
+  .riddle-box .answer {
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    border-radius: 12px; padding: 15px;
+    color: #4ade80; font-weight: 700;
+    display: none;
+  }
+  .riddle-box .answer.show { display: block; }
+
+  /* ===== Font Preview ===== */
+  .font-preview {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px; padding: 15px;
+    margin-bottom: 12px; word-wrap: break-word;
+  }
+  .font-preview .fp-label {
+    font-size: 0.75rem; color: #a855f7;
+    margin-bottom: 8px; font-weight: 700;
+  }
+  .font-preview .fp-text {
+    font-size: 1.1rem; line-height: 1.6; cursor: pointer;
+    word-break: break-word;
+  }
+  .font-preview .fp-text:hover { color: #4ade80; }
+
+  /* ===== Date Card ===== */
+  .date-card {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(236, 72, 153, 0.15));
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: 20px; padding: 30px;
+    text-align: center; margin-bottom: 15px;
+  }
+  .date-card .date-label {
+    font-size: 0.85rem; color: #a855f7; margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .date-card .date-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.6rem; font-weight: 900;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+  .date-card .date-time {
+    font-size: 2.5rem; font-weight: 900;
+    background: linear-gradient(90deg, #a855f7, #ec4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  /* ===== User Profile ===== */
+  .profile-header { text-align: center; margin-bottom: 20px; }
+  .profile-header .avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 900; margin: 0 auto 15px;
+    border: 3px solid rgba(168, 85, 247, 0.5);
+  }
+  .profile-header h3 { font-size: 1.3rem; margin-bottom: 5px; }
+  .profile-header .rank {
+    display: inline-block;
+    background: rgba(74, 222, 128, 0.15); color: #4ade80;
+    padding: 4px 14px; border-radius: 50px; font-size: 0.8rem;
+  }
+  .profile-stats {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 12px; margin-top: 20px;
+  }
+  .profile-stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 15px; padding: 15px; text-align: center;
+  }
+  .profile-stat .num { font-size: 1.5rem; font-weight: 900; color: #a855f7; }
+  .profile-stat .lbl { font-size: 0.8rem; color: #888; margin-top: 5px; }
+
+  /* ===== Notification ===== */
+  .notification {
+    position: fixed; top: 90px; left: 50%; transform: translateX(-50%) translateY(-20px);
+    background: #0f0f23;
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    border-radius: 15px; padding: 15px 25px;
+    z-index: 500; opacity: 0; visibility: hidden;
+    transition: 0.3s; font-size: 0.95rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+    max-width: 90%; text-align: center;
+  }
+  .notification.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+  .notification.success { border-color: rgba(74, 222, 128, 0.5); }
+  .notification.error { border-color: rgba(236, 72, 153, 0.5); }
+
+  /* ===== Alert ===== */
+  .alert {
+    padding: 12px 18px; border-radius: 12px;
+    margin-bottom: 15px; font-size: 0.9rem;
+    display: none;
+  }
+  .alert.show { display: block; }
+  .alert.success { background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+  .alert.error { background: rgba(236, 72, 153, 0.15); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3); }
+  .alert.info { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+  /* ===== Footer ===== */
+  footer {
+    text-align: center; padding: 30px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    color: #888; font-size: 0.9rem;
+    position: relative; z-index: 1; margin-top: 60px;
+  }
+  footer .footer-logo {
+    font-family: 'Orbitron', sans-serif; font-weight: 900;
+    font-size: 1.2rem;
+    background: linear-gradient(90deg, #a855f7, #ec4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    nav { padding: 10px 15px; }
+    nav .logo-text { font-size: 1.2rem; }
+    .dropdown { width: 260px; left: 10px; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero p { font-size: 1rem; }
+    .stats-bar { gap: 15px; }
+    .stat-item { min-width: 110px; padding: 12px 18px; }
+    .stat-item .num { font-size: 1.4rem; }
+    .modal-content { padding: 20px; }
+    .chat-area { height: 300px; }
+    .ai-header { flex-wrap: wrap; }
+  }
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 1.8rem; }
+    .section-title h2 { font-size: 1.4rem; }
+    .profile-stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Stars -->
+  <div class="stars-bg" id="stars"></div>
+  <div class="overlay" id="overlay"></div>
+  <div class="notification" id="notification"></div>
+
+  <!-- Navbar -->
+  <nav>
+    <a onclick="scrollTop()" class="logo">
+      <div class="logo-icon">🤖</div>
+      <span class="logo-text">Alpha Bot</span>
+    </a>
+    <div class="menu-btn" id="menuBtn">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- Dropdown -->
+  <div class="dropdown" id="dropdown">
+    <div class="dd-header">
+      <div class="dd-icon">🤖</div>
+      <div>
+        <div class="dd-title">Alpha Bot</div>
+        <div class="dd-sub">دستیار هوشمند آلفا</div>
+      </div>
+    </div>
+    <a onclick="openAIPage()"><span class="icon">🧠</span> هوش مصنوعی</a>
+    <a onclick="openModal('riddle')"><span class="icon">🧩</span> معما</a>
+    <a onclick="openModal('font')"><span class="icon">📝</span> تبدیل فونت</a>
+    <a onclick="openModal('date')"><span class="icon">📅</span> تاریخ</a>
+    <a onclick="openModal('vip')"><span class="icon">👑</span> دریافت VIP</a>
+    <a onclick="openModal('profile')"><span class="icon">📊</span> وضعیت من</a>
+    <a onclick="openModal('credits')"><span class="icon">💰</span> اعتبار من</a>
+    <a onclick="openModal('invite')"><span class="icon">🔗</span> لینک دعوت</a>
+    <a onclick="openModal('lottery')"><span class="icon">🎰</span> قرعه‌کشی</a>
+    <a onclick="openModal('winners')"><span class="icon">🏆</span> برنده‌ها</a>
+    <a onclick="openModal('about')"><span class="icon">👨‍💻</span> درباره ربات</a>
+    <a onclick="openModal('bug')"><span class="icon">🐛</span> گزارش باگ</a>
+  </div>
+
+  <!-- Main Content -->
+  <div id="mainContent">
+    <section class="hero">
+      <div class="badge">✨ نسخه وب آلفا بات ✨</div>
+      <h1>Alpha Bot</h1>
+      <p>دستیار هوشمند، معما، تبدیل فونت، قرعه‌کشی و کلی امکانات دیگه — همه توی یه سایت! 🚀</p>
+      <div class="cta">
+        <a onclick="openAIPage()" class="primary">🧠 شروع چت با AI</a>
+        <a onclick="openModal('date')" class="secondary">📅 مشاهده تاریخ</a>
+      </div>
+    </section>
+
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="num">۱</div>
+        <div class="lbl">مدل هوش مصنوعی</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">۲۹</div>
+        <div class="lbl">معمای سخت</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">۵</div>
+        <div class="lbl">فونت خاص</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">۷</div>
+        <div class="lbl">جایزه قرعه‌کشی</div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <h2>🎯 قابلیت‌های ربات</h2>
+      <span></span>
+      <p>روی هر کارت کلیک کن تا امتحانش کنی!</p>
+    </div>
+
+    <section class="features">
+      <div class="feature-card" onclick="openAIPage()">
+        <div class="fc-icon">🧠</div>
+        <h3>هوش مصنوعی</h3>
+        <p>چت با Alfa-GPT، دستیار هوشمند و سریع</p>
+      </div>
+      <div class="feature-card" onclick="openModal('riddle')">
+        <div class="fc-icon">🧩</div>
+        <h3>معما</h3>
+        <p>۲۹ معمای سخت و جذاب با جواب</p>
+      </div>
+      <div class="feature-card" onclick="openModal('font')">
+        <div class="fc-icon">📝</div>
+        <h3>تبدیل فونت</h3>
+        <p>۵ فونت خاص: بولد، ایتالیک، دست‌نویس، کرسیو و کشیده</p>
+      </div>
+      <div class="feature-card" onclick="openModal('date')">
+        <div class="fc-icon">📅</div>
+        <h3>تاریخ</h3>
+        <p>تاریخ و ساعت شمسی و میلادی به صورت زنده</p>
+      </div>
+      <div class="feature-card" onclick="openModal('vip')">
+        <div class="fc-icon">👑</div>
+        <h3>دریافت VIP</h3>
+        <p>با دعوت ۱۰ نفر VIP شو و امکانات ویژه بگیر</p>
+      </div>
+      <div class="feature-card" onclick="openModal('profile')">
+        <div class="fc-icon">📊</div>
+        <h3>وضعیت من</h3>
+        <p>مشاهده پروفایل، اعتبار و رنک شما</p>
+      </div>
+      <div class="feature-card" onclick="openModal('credits')">
+        <div class="fc-icon">💰</div>
+        <h3>اعتبار من</h3>
+        <p>مشاهده و دریافت اعتبار از طریق تبلیغات</p>
+      </div>
+      <div class="feature-card" onclick="openModal('lottery')">
+        <div class="fc-icon">🎰</div>
+        <h3>قرعه‌کشی</h3>
+        <p>شرکت در قرعه‌کشی با ۵ اعتبار و شانس برنده شدن</p>
+      </div>
+      <div class="feature-card" onclick="openModal('winners')">
+        <div class="fc-icon">🏆</div>
+        <h3>برنده‌ها</h3>
+        <p>مشاهده آخرین برندگان قرعه‌کشی</p>
+      </div>
+      <div class="feature-card" onclick="openModal('invite')">
+        <div class="fc-icon">🔗</div>
+        <h3>لینک دعوت</h3>
+        <p>لینک اختصاصی دعوت دوستان و دریافت اعتبار</p>
+      </div>
+      <div class="feature-card" onclick="openModal('about')">
+        <div class="fc-icon">👨‍💻</div>
+        <h3>درباره ربات</h3>
+        <p>اطلاعات کامل درباره آلفا بات و سازنده</p>
+      </div>
+      <div class="feature-card" onclick="openModal('bug')">
+        <div class="fc-icon">🐛</div>
+        <h3>گزارش باگ</h3>
+        <p>ارسال گزارش باگ یا مشکل به تیم پشتیبانی</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- AI Page -->
+  <div class="ai-page" id="aiPage">
+    <div class="ai-header">
+      <div class="ai-icon">🧠</div>
+      <div>
+        <h2>هوش مصنوعی</h2>
+        <p>مدل فعال: 🧠 Alfa-GPT</p>
+      </div>
+      <button class="back-btn" onclick="closeAIPage()">🔙 بازگشت</button>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+      <div class="chat-msg bot">
+        <div class="bot-name">Alpha Bot</div>
+        سلام! 👋 من آلفا بات هستم. هر سوالی داری بپرس! 🚀
+      </div>
+    </div>
+
+    <div class="typing-indicator" id="typingIndicator">
+      <span></span><span></span><span></span>
+    </div>
+
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="سوالت رو بنویس..." onkeypress="if(event.key==='Enter') sendMessage()">
+      <button id="sendBtn" onclick="sendMessage()">📤</button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content" id="modalContent"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-logo">🤖 Alpha Bot</div>
+    <p>© 2025 Alpha Bot — ساخته شده توسط طاها دانش‌بیان</p>
+  </footer>
+
+  <script>
+    // ==================================================
+    // ========== تنظیمات API ==========
+    // ==================================================
+    const GAPGPT_API_KEY = "sk-52uzKwqgnkBa2nNYgfEWsv8O4f28Nu3UMQWtiOhI5GPBfbbw";
+    const GAPGPT_BASE_URL = "https://api.gapgpt.app/v1";
+    
+    const MODEL_ID = "gpt-4o";
+    
+    let chatMessages = [];
+
+    // ==================================================
+    // ========== Stars ==========
+    // ==================================================
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 20; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      const size = Math.random() * 2 + 1;
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 5 + 's';
+      star.style.animationDuration = (Math.random() * 3 + 4) + 's';
+      starsContainer.appendChild(star);
+    }
+
+    // ==================================================
+    // ========== Menu ==========
+    // ==================================================
+    const menuBtn = document.getElementById('menuBtn');
+    const dropdown = document.getElementById('dropdown');
+    const overlay = document.getElementById('overlay');
+
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuBtn.classList.toggle('active');
+      dropdown.classList.toggle('open');
+      overlay.classList.toggle('open');
+    });
+
+    overlay.addEventListener('click', closeMenu);
+    dropdown.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        setTimeout(closeMenu, 100);
+      });
+    });
+
+    function closeMenu() {
+      menuBtn.classList.remove('active');
+      dropdown.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    function scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+    // ==================================================
+    // ========== Notification ==========
+    // ==================================================
+    function showNotification(msg, type = 'success') {
+      const notif = document.getElementById('notification');
+      notif.innerText = msg;
+      notif.className = 'notification show ' + type;
+      setTimeout(() => notif.classList.remove('show'), 2500);
+    }
+
+    // ==================================================
+    // ========== AI Page ==========
+    // ==================================================
+    function openAIPage() {
+      document.getElementById('mainContent').style.display = 'none';
+      document.getElementById('aiPage').classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        const input = document.getElementById('chatInput');
+        if (input) input.focus();
+      }, 200);
+    }
+
+    function closeAIPage() {
+      document.getElementById('aiPage').classList.remove('active');
+      document.getElementById('mainContent').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML.replace(/\n/g, '<br>');
+    }
+
+    function renderChat() {
+      const area = document.getElementById('chatArea');
+      if (!area) return;
+      
+      if (chatMessages.length === 0) {
+        area.innerHTML = `<div class="chat-msg bot"><div class="bot-name">Alpha Bot</div>سلام! 👋 من آلفا بات هستم. هر سوالی داری بپرس! 🚀</div>`;
+        return;
+      }
+      
+      let html = chatMessages.map(m => {
+        if (m.role === 'user') {
+          return `<div class="chat-msg user">${escapeHtml(m.content)}</div>`;
+        } else {
+          return `<div class="chat-msg bot"><div class="bot-name">Alpha Bot</div>${escapeHtml(m.content)}</div>`;
+        }
+      }).join('');
+      
+      area.innerHTML = html;
+      area.scrollTop = area.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      chatMessages.push({ role: 'user', content: text });
+      input.value = '';
+      renderChat();
+      
+      sendBtn.disabled = true;
+      input.disabled = true;
+      
+      const typing = document.getElementById('typingIndicator');
+      typing.classList.add('show');
+      setTimeout(() => {
+        const area = document.getElementById('chatArea');
+        if (area) area.scrollTop = area.scrollHeight;
+      }, 50);
+      
+      try {
+        const messages = [
+          { role: 'system', content: 'تو یک دستیار هوشمند، مفید و دوستانه هستی. اسمت آلفا بات هست و توسط طاها دانش‌بیان ساخته شده‌ای.' },
+          ...chatMessages.map(m => ({ role: m.role, content: m.content }))
+        ];
+        
+        const response = await fetch(GAPGPT_BASE_URL + '/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + GAPGPT_API_KEY
+          },
+          body: JSON.stringify({
+            model: MODEL_ID,
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 800
+          })
+        });
+        
+        if (!response.ok) throw new Error('خطا در ارتباط با API');
+        
+        const data = await response.json();
+        const answer = data.choices[0].message.content;
+        
+        chatMessages.push({ role: 'assistant', content: answer });
+        renderChat();
+        
+      } catch (err) {
+        chatMessages.push({ role: 'assistant', content: '⚠️ متأسفم، خطایی رخ داد: ' + err.message });
+        renderChat();
+      } finally {
+        typing.classList.remove('show');
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
+      }
+    }
+
+    // ==================================================
+    // ========== Modals ==========
+    // ==================================================
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modalContent');
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    function closeModal() {
+      modal.classList.remove('open');
+      setTimeout(() => { modalContent.innerHTML = ''; }, 200);
+    }
+
+    function openModal(type) {
+      let html = '';
+      switch(type) {
+        case 'riddle': html = getRiddleModal(); break;
+        case 'font': html = getFontModal(); break;
+        case 'date': html = getDateModal(); break;
+        case 'vip': html = getVIPModal(); break;
+        case 'profile': html = getProfileModal(); break;
+        case 'credits': html = getCreditsModal(); break;
+        case 'invite': html = getInviteModal(); break;
+        case 'lottery': html = getLotteryModal(); break;
+        case 'winners': html = getWinnersModal(); break;
+        case 'about': html = getAboutModal(); break;
+        case 'bug': html = getBugModal(); break;
+        default: html = '<p>به زودی...</p>';
+      }
+      modalContent.innerHTML = html;
+      modal.classList.add('open');
+    }
+
+    // ==================================================
+    // ========== Riddle ==========
+    // ==================================================
+    const RIDDLES = [
+      { q: "چه چیزی بدون حرکت همه جا را می‌پیماید؟", a: "زمان" },
+      { q: "من یک خانه دارم بدون در و پنجره، اما اگر بخواهم می‌توانم داخل آن پنهان شوم. من چیست؟", a: "تخم‌مرغ" },
+      { q: "چه چیزی را می‌توانی بشکنی بدون اینکه آن را لمس کنی؟", a: "قول" },
+      { q: "من پر هستم اما هیچ وزنی ندارم. من چیست؟", a: "نور" },
+      { q: "چه چیزی هر روز بزرگتر می‌شود اما هرگز پیر نمی‌شود؟", a: "خاطره" },
+      { q: "من یک چشم دارم اما نمی‌توانم ببینم. من چیست؟", a: "سوزن" },
+      { q: "چه چیزی می‌تواند بدون پا بدود و بدون دهان گریه کند؟", a: "ابر" },
+      { q: "من از شیشه ساخته شده‌ام اما می‌توانی از من عبور کنی. من چیست؟", a: "آینه" },
+      { q: "چه چیزی همیشه جلوی شماست اما هرگز نمی‌توانید آن را ببینید؟", a: "آینده" },
+      { q: "من یک کلید دارم اما هیچ دری را باز نمی‌کنم. من چیست؟", a: "صفحه کلید" },
+      { q: "چه چیزی هر چه بیشتر از آن برداری، بزرگتر می‌شود؟", a: "سوراخ" },
+      { q: "من یک گردن دارم اما سر ندارم. من چیست؟", a: "بطری" },
+      { q: "چه چیزی بدون بال پرواز می‌کند و بدون چشم گریه می‌کند؟", a: "باد" },
+      { q: "من یک تخت دارم اما هرگز نمی‌خوابم. من چیست؟", a: "رودخانه" },
+      { q: "چه چیزی می‌تواند یک اتاق را پر کند اما هیچ فضایی نگیرد؟", a: "نور" },
+      { q: "من یک زبان دارم اما نمی‌توانم حرف بزنم. من چیست؟", a: "کفش" },
+      { q: "چه چیزی از کوه بالا می‌رود اما هرگز پایین نمی‌آید؟", a: "سن" },
+      { q: "من یک صورت دارم اما نمی‌توانم لبخند بزنم. من چیست؟", a: "ساعت" },
+      { q: "چه چیزی را می‌توانی بدهی اما هرگز نتوانی پس بگیری؟", a: "قول" },
+      { q: "من یک دست دارم اما نمی‌توانم بگیرم. من چیست؟", a: "عقربه ساعت" },
+      { q: "چه چیزی هر شب می‌آید اما هرگز روز نمی‌شود؟", a: "ستاره" },
+      { q: "من یک صندلی دارم اما نمی‌توانم بنشینم. من چیست؟", a: "دوچرخه" },
+      { q: "من یک قفل دارم اما هیچ دری ندارم. من چیست؟", a: "قفل مو" },
+      { q: "چه چیزی از آتش عبور می‌کند اما نمی‌سوزد؟", a: "دود" },
+      { q: "من یک خانه دارم اما هیچ سقفی ندارم. من چیست؟", a: "لاک‌پشت" },
+      { q: "چه چیزی می‌تواند یک شهر را خراب کند اما یک برگ را تکان ندهد؟", a: "صدای بلند" },
+      { q: "من یک پا دارم اما نمی‌توانم راه بروم. من چیست؟", a: "میز" },
+      { q: "چه چیزی از میان انگشتان شما می‌گذرد اما هرگز نمی‌توانید آن را بگیرید؟", a: "آب" },
+      { q: "من یک چشم دارم اما نمی‌توانم پلک بزنم. من چیست؟", a: "دوربین" }
+    ];
+    
+    let currentRiddle = null;
+
+    function getRiddleModal() {
+      currentRiddle = RIDDLES[Math.floor(Math.random() * RIDDLES.length)];
+      return `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">🧩</div>
+          <div>
+            <h3>معمای سخت</h3>
+            <p>یه معمای تصادفی برات آوردیم</p>
+          </div>
+        </div>
+        <div class="riddle-box">
+          <div class="question">${currentRiddle.q}</div>
+          <div class="answer" id="riddleAnswer">💡 جواب: ${currentRiddle.a}</div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="showRiddleAnswer()" id="showAnswerBtn">👁️ نمایش جواب</button>
+        <button class="btn btn-secondary btn-block" onclick="openModal('riddle')" style="margin-top:10px">🔄 معمای بعدی</button>
+      `;
+    }
+
+    function showRiddleAnswer() {
+      document.getElementById('riddleAnswer').classList.add('show');
+      document.getElementById('showAnswerBtn').style.display = 'none';
+    }
+
+    // ==================================================
+    // ========== Font ==========
+    // ==================================================
+    function toBold(text) {
+      const map = {'a':'𝗮','b':'𝗯','c':'𝗰','d':'𝗱','e':'𝗲','f':'𝗳','g':'𝗴','h':'𝗵','i':'𝗶','j':'𝗷','k':'𝗸','l':'𝗹','m':'𝗺','n':'𝗻','o':'𝗼','p':'𝗽','q':'𝗾','r':'𝗿','s':'𝘀','t':'𝘁','u':'𝘂','v':'𝘃','w':'𝘄','x':'𝘅','y':'𝘆','z':'𝘇','A':'𝗔','B':'𝗕','C':'𝗖','D':'𝗗','E':'𝗘','F':'𝗙','G':'𝗚','H':'𝗛','I':'𝗜','J':'𝗝','K':'𝗞','L':'𝗟','M':'𝗠','N':'𝗡','O':'𝗢','P':'𝗣','Q':'𝗤','R':'𝗥','S':'𝗦','T':'𝗧','U':'𝗨','V':'𝗩','W':'𝗪','X':'𝗫','Y':'𝗬','Z':'𝗭'};
+      return text.split('').map(c => map[c] || c).join('');
+    }
+    function toItalic(text) {
+      const map = {'a':'𝘢','b':'𝘣','c':'𝘤','d':'𝘥','e':'𝘦','f':'𝘧','g':'𝘨','h':'𝘩','i':'𝘪','j':'𝘫','k':'𝘬','l':'𝘭','m':'𝘮','n':'𝘯','o':'𝘰','p':'𝘱','q':'𝘲','r':'𝘳','s':'𝘴','t':'𝘵','u':'𝘶','v':'𝘷','w':'𝘸','x':'𝘹','y':'𝘺','z':'𝘻','A':'𝘈','B':'𝘉','C':'𝘊','D':'𝘋','E':'𝘌','F':'𝘍','G':'𝘎','H':'𝘏','I':'𝘐','J':'𝘑','K':'𝘒','L':'𝘓','M':'𝘔','N':'𝘕','O':'𝘖','P':'𝘗','Q':'𝘘','R':'𝘙','S':'𝘚','T':'𝘛','U':'𝘜','V':'𝘝','W':'𝘞','X':'𝘟','Y':'𝘠','Z':'𝘡'};
+      return text.split('').map(c => map[c] || c).join('');
+    }
+    function toScript(text) {
+      const map = {'a':'𝒶','b':'𝒷','c':'𝒸','d':'𝒹','e':'ℯ','f':'𝒻','g':'ℊ','h':'𝒽','i':'𝒾','j':'𝒿','k':'𝓀','l':'𝓁','m':'𝓂','n':'𝓃','o':'ℴ','p':'𝓅','q':'𝓆','r':'𝓇','s':'𝓈','t':'𝓉','u':'𝓊','v':'𝓋','w':'𝓌','x':'𝓍','y':'𝓎','z':'𝓏','A':'𝒜','B':'ℬ','C':'𝒞','D':'𝒟','E':'ℰ','F':'ℱ','G':'𝒢','H':'ℋ','I':'ℐ','J':'𝒥','K':'𝒦','L':'ℒ','M':'ℳ','N':'𝒩','O':'𝒪','P':'𝒫','Q':'𝒬','R':'ℛ','S':'𝒮','T':'𝒯','U':'𝒰','V':'𝒱','W':'𝒲','X':'𝒳','Y':'𝒴','Z':'𝒵'};
+      return text.split('').map(c => map[c] || c).join('');
+    }
+    function toCursive(text) {
+      const map = {'a':'𝓪','b':'𝓫','c':'𝓬','d':'𝓭','e':'𝓮','f':'𝓯','g':'𝓰','h':'𝓱','i':'𝓲','j':'𝓳','k':'𝓴','l':'𝓵','m':'𝓶','n':'𝓷','o':'𝓸','p':'𝓹','q':'𝓺','r':'𝓻','s':'𝓼','t':'𝓽','u':'𝓾','v':'𝓿','w':'𝔀','x':'𝔁','y':'𝔂','z':'𝔃','A':'𝓐','B':'𝓑','C':'𝓒','D':'𝓓','E':'𝓔','F':'𝓕','G':'𝓖','H':'𝓗','I':'𝓘','J':'𝓙','K':'𝓚','L':'𝓛','M':'𝓜','N':'𝓝','O':'𝓞','P':'𝓟','Q':'𝓠','R':'𝓡','S':'𝓢','T':'𝓣','U':'𝓤','V':'𝓥','W':'𝓦','X':'𝓧','Y':'𝓨','Z':'𝓩'};
+      return text.split('').map(c => map[c] || c).join('');
+    }
+    function toKashida(text) {
+      const map = {'س':'ســ','ش':'شــ','ص':'صــ','ض':'ضــ','ط':'طــ','ظ':'ظــ','ع':'عــ','غ':'غــ','ف':'فــ','ق':'قــ','ک':'کــ','گ':'گــ','ل':'لــ','م':'مــ','ن':'نــ'};
+      return text.split('').map(c => map[c] || c).join('');
+    }
+
+    function getFontModal() {
+      return `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">📝</div>
+          <div>
+            <h3>تبدیل فونت</h3>
+            <p>متن خود را وارد کنید</p>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>✍️ متن خود را بنویسید:</label>
+          <textarea id="fontInput" placeholder="مثلاً: سلام دنیا" oninput="updateFonts()"></textarea>
+        </div>
+        <div id="fontResults"></div>
+      `;
+    }
+
+    function updateFonts() {
+      const text = document.getElementById('fontInput').value;
+      const results = document.getElementById('fontResults');
+      if (!text) { results.innerHTML = ''; return; }
+      
+      results.innerHTML = `
+        <div class="font-preview">
+          <div class="fp-label">🅱️ پررنگ (Bold)</div>
+          <div class="fp-text" onclick="copyText(this)">${toBold(text)}</div>
+        </div>
+        <div class="font-preview">
+          <div class="fp-label">𝓲 ایتالیک (Italic)</div>
+          <div class="fp-text" onclick="copyText(this)">${toItalic(text)}</div>
+        </div>
+        <div class="font-preview">
+          <div class="fp-label">𝒞 دست‌نویس (Script)</div>
+          <div class="fp-text" onclick="copyText(this)">${toScript(text)}</div>
+        </div>
+        <div class="font-preview">
+          <div class="fp-label">𝓒 کرسیو (Cursive)</div>
+          <div class="fp-text" onclick="copyText(this)">${toCursive(text)}</div>
+        </div>
+        <div class="font-preview">
+          <div class="fp-label">🖋️ کشیده</div>
+          <div class="fp-text" onclick="copyText(this)">${toKashida(text)}</div>
+        </div>
+      `;
+    }
+
+    function copyText(el) {
+      navigator.clipboard.writeText(el.innerText).then(() => {
+        showNotification('✅ متن کپی شد!', 'success');
+      });
+    }
+
+    // ==================================================
+    // ========== Date ==========
+    // ==================================================
+    let dateInterval = null;
+
+    function getDateModal() {
+      if (dateInterval) clearInterval(dateInterval);
+      
+      const html = `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">📅</div>
+          <div>
+            <h3>تاریخ و ساعت</h3>
+            <p>زنده به‌روز می‌شود</p>
+          </div>
+        </div>
+        <div class="date-card">
+          <div class="date-label">🖋️ تاریخ شمسی</div>
+          <div class="date-value" id="shamsiDate">—</div>
+          <div class="date-label">🌍 تاریخ میلادی</div>
+          <div class="date-value" id="miladiDate">—</div>
+          <div class="date-label">⏰ ساعت</div>
+          <div class="date-time" id="timeNow">—</div>
+        </div>
+      `;
+      
+      setTimeout(() => {
+        updateDate();
+        dateInterval = setInterval(updateDate, 1000);
+      }, 100);
+      
+      return html;
+    }
+
+    function updateDate() {
+      const now = new Date();
+      
+      const miladi = now.toLocaleDateString('fa-IR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      const miladiEl = document.getElementById('miladiDate');
+      if (miladiEl) miladiEl.innerText = miladi;
+      
+      const shamsi = now.toLocaleDateString('fa-IR-u-ca-persian', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      const shamsiEl = document.getElementById('shamsiDate');
+      if (shamsiEl) shamsiEl.innerText = shamsi;
+      
+      const time = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const timeEl = document.getElementById('timeNow');
+      if (timeEl) timeEl.innerText = time;
+    }
+
+    // ==================================================
+    // ========== بقیه مودال‌ها ==========
+    // ==================================================
+    function getVIPModal() {
+      return `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">👑</div>
+          <div><h3>دریافت VIP</h3><p>با دعوت دوستان VIP شو</p></div>
+        </div>
+        <div class="alert info show">🔥 برای دریافت VIP، باید <strong>۱۰ نفر</strong> را دعوت کنی.</div>
+        <div class="profile-stats">
+          <div class="profile-stat"><div class="num">۰</div><div class="lbl">تعداد دعوت‌ها</div></div>
+          <div class="profile-stat"><div class="num">۱۰</div><div class="lbl">دعوت مورد نیاز</div></div>
+        </div>
+        <div class="input-group" style="margin-top:20px">
+          <label>🔗 لینک دعوت شما:</label>
+          <input type="text" value="https://ble.ir/alfaaaabot?start=invite_123" readonly onclick="this.select()">
+        </div>
+      `;
+    }
+
+    function getProfileModal() {
+      return `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">📊</div>
+          <div><h3>وضعیت من</h3><p>پروفایل کاربری شما</p></div>
+        </div>
+        <div class="profile-header">
+          <div class="avatar">👤</div>
+          <h3>کاربر آلفا</h3>
+          <span class="rank">👤 رنک: معمولی</span>
+        </div>
+        <div class="profile-stats">
+          <div class="profile-stat"><div class="num">۲۰</div><div class="lbl">💰 اعتبار</div></div>
+          <div class="profile-stat"><div class="num">۰</div><div class="lbl">👥 دعوت‌ها</div></div>
+          <div class="profile-stat"><div class="num">۰</div><div class="lbl">🎰 قرعه‌کشی</div></div>
+          <div class="profile-stat"><div class="num">۰</div><div class="lbl">🧠 سوالات AI</div></div>
+        </div>
+      `;
+    }
+
+    function getCreditsModal() {
+      return `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">💰</div>
+          <div><h3>اعتبار من</h3><p>مشاهده و دریافت اعتبار</p></div>
+        </div>
+        <div class="date-card" style="background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.3);">
+          <div class="date-label" style="color: #4ade80;">💰 اعتبار فعلی شما</div>
+          <div class="date-value" style="color: #4ade80;">۲۰</div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="showNotification('✅ ۱ اعتبار اضافه شد!', 'success')">📣 مشاهده تبلیغ و دریافت ۱ اعتبار</button>
+        <button class="btn btn-secondary btn-block" onclick="openModal('invite')" style="margin-top:10px">🔗 دعوت دوستان (۲۰ اعتبار)</button>
+      `;
+    }
+
+    function getInviteModal() {
+      return `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">🔗</div>
+          <div><h3>لینک دعوت</h3><p>هر دعوت = ۲۰ اعتبار</p></div>
+        </div>
+        <div class="input-group">
+          <label>لینک اختصاصی شما:</label>
+          <input type="text" value="https://ble.ir/alfaaaabot?start=invite_123" readonly onclick="this.select(); showNotification('✅ لینک کپی شد!', 'success')">
+        </div>
+        <div class="alert success show">💡 با هر دعوت، ۲۰ اعتبار اضافه می‌شود!</div>
+      `;
+    }
+
+    function getLotteryModal() {
+      return `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">🎰</div>
+          <div><h3>قرعه‌کشی</h3><p>شانست رو امتحان کن!</p></div>
+        </div>
+        <div class="riddle-box">
+          <div class="question">🎁 جوایز قرعه‌کشی:</div>
+          <div style="text-align:right; color:#ccc; font-size:0.9rem; line-height:2;">
+            • 🎁 ۱۰ اعتبار<br>• 🎁 ۲۰ اعتبار<br>• 🎁 ۵۰ اعتبار<br>• 👑 VIP ۳ روزه<br>• 👑 VIP هفتگی<br>• 👑 VIP دائم<br>• 📣 تبلیغ رایگان
+          </div>
+        </div>
+        <div class="alert info show">💰 هزینه شرکت: <strong>۵ اعتبار</strong></div>
+        <button class="btn btn-primary btn-block" onclick="showNotification('✅ با موفقیت در قرعه‌کشی شرکت کردید! 🍀', 'success')">🍀 شرکت در قرعه‌کشی</button>
+      `;
+    }
+
+    function getWinnersModal() {
+      return `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">🏆</div>
+          <div><h3>برنده‌ها</h3><p>آخرین برندگان</p></div>
+        </div>
+        <div class="alert info show">📭 هنوز هیچ برنده‌ای وجود ندارد. اولین نفر باش! 🎰</div>
+      `;
+    }
+
+    function getAboutModal() {
+      return `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">👨‍💻</div>
+          <div><h3>درباره آلفا بات</h3><p>اطلاعات کامل</p></div>
+        </div>
+        <div style="line-height:2.2; color:#ccc; font-size:0.95rem;">
+          <p>🤖 <strong style="color:#fff;">نام:</strong> آلفا بات</p>
+          <p>👨‍💻 <strong style="color:#fff;">سازنده:</strong> طاها دانش‌بیان</p>
+          <p>🧠 <strong style="color:#fff;">هوش مصنوعی:</strong> GapGPT</p>
+          <p>📌 <strong style="color:#fff;">مدل:</strong> Alfa-GPT (GPT-4o)</p>
+          <hr style="border-color:rgba(255,255,255,0.1); margin:15px 0;">
+          <p>💰 <strong style="color:#a855f7;">سیستم اعتبار:</strong></p>
+          <p style="padding-right:20px;">• ۲۰ اعتبار اولیه</p>
+          <p style="padding-right:20px;">• هر دعوت = ۲۰ اعتبار</p>
+          <p style="padding-right:20px;">• هر سوال = ۱ اعتبار</p>
+          <p style="padding-right:20px;">• مشاهده تبلیغ = ۱ اعتبار</p>
+          <p style="padding-right:20px;">• قرعه‌کشی = ۵ اعتبار</p>
+          <hr style="border-color:rgba(255,255,255,0.1); margin:15px 0;">
+          <p>👑 <strong style="color:#a855f7;">سیستم VIP:</strong></p>
+          <p style="padding-right:20px;">• دعوت ۱۰ نفر</p>
+          <p style="padding-right:20px;">• دسترسی نامحدود</p>
+          <p style="text-align:center; color:#a855f7; margin-top:15px;">📱 نسخه وب آلفا بات</p>
+        </div>
+      `;
+    }
+
+    function getBugModal() {
+      return `
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-header">
+          <div class="mh-icon">🐛</div>
+          <div><h3>گزارش باگ</h3><p>مشکل خود را توضیح دهید</p></div>
+        </div>
+        <div class="input-group">
+          <label>📝 توضیحات مشکل:</label>
+          <textarea id="bugText" placeholder="مشکل را با جزئیات توضیح دهید..."></textarea>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="submitBug()">📤 ارسال گزارش</button>
+      `;
+    }
+
+    function submitBug() {
+      const text = document.getElementById('bugText').value.trim();
+      if (!text) {
+        showNotification('⚠️ لطفاً مشکل را توضیح دهید!', 'error');
+        return;
+      }
+      showNotification('✅ گزارش ارسال شد! ممنون 💜', 'success');
+      closeModal();
+    }
+
+    // ==================================================
+    // ========== Escape Key ==========
+    // ==================================================
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        if (document.getElementById('aiPage').classList.contains('active')) {
+          closeAIPage();
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
